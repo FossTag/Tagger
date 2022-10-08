@@ -1,10 +1,5 @@
 #include <Arduino.h>
 
-#define DECODE_SONY
-
-#include <IRremote.hpp>
-#include <Sound.h>
-
 /**
  * Required.
  * Used to differentiate each device, so that we can ignore IR data from our own transmitter.
@@ -58,6 +53,20 @@
 
 // #define SPEAKER_PIN 7
 
+#define DECODE_SONY
+
+#ifdef SPEAKER_PIN
+/**
+ * When using the SPEAKER_PIN for feedback, the Arduino tone() will use Timer 2 which is the default used for many boards by the IRremote library.
+ * https://github.com/Arduino-IRremote/Arduino-IRremote#incompatibilities-to-other-libraries-and-arduino-commands-like-tone-and-analogwrite
+ * TODO: To support more boards with arduino-laser-tag, we will need to carefully choose timers here as per the docs above.
+ */
+#define IR_USE_AVR_TIMER1
+#endif
+
+#include <IRremote.hpp>
+#include <Sound.h>
+
 /**
  * Used for both debouncing fires, limiting the rate of fire, and also used to only
  * show feedback of firing for a short time.
@@ -72,19 +81,95 @@ long lastFireTime = 0L;
  */
 long lastHitTime = 0L;
 
-int health = 100;
+int health = 1000;
+
+void printConfig() {
+  Serial.println("arduino-laser-tag has the following pin configurations:");
+
+  Serial.println("");
+  Serial.println("HIT_IR_RECEIVE_PIN");
+  #ifdef HIT_IR_RECEIVE_PIN
+  Serial.print("  Pin: ");
+  Serial.println(HIT_IR_RECEIVE_PIN);
+  Serial.println("  Wiring: 38KHz IR receiver (e.g. TSOP38238).");
+  Serial.println("          Can be multiple receivers wired in series (e.g. a few mounted on a helmet, shoulders, gun, etc).");
+  #else
+  Serial.println("N/A (Unable to receive hits from other players. May be useful for things like umpires devices, but that is about all.)");
+  #endif
+
+  Serial.println("");
+  Serial.println("FIRE_IR_SEND_PIN");
+  #ifdef FIRE_IR_SEND_PIN
+  Serial.print("  Pin: ");
+  Serial.println(FIRE_IR_SEND_PIN);
+  Serial.println("  Wiring: IR LED with the anode connected to this pin.");
+  Serial.println("          Get maximum range by using a high powered LED (e.g. 100mA) with a narrow viewing angle and an appropriate lens mounted in front.");
+  Serial.println("          If you require more power than this pin can deliver, connect a transitor to this pin instead to drive the LED.");
+  #else
+  Serial.println("  Not configured.");
+  Serial.println("  Unable to fire at other players.");
+  Serial.println("  May be useful for, e.g. static firing range targets, but not much else.");
+  #endif
+  
+  Serial.println("");
+  Serial.println("FIRE_BUTTON_PIN");
+  #ifdef FIRE_BUTTON_PIN
+  Serial.print("  Pin: ");
+  Serial.println(FIRE_BUTTON_PIN);
+  Serial.println("  Wiring: Momentary switch with one side wired to ground, the other here.");
+  #else
+  Serial.println("  Not configured.");
+  Serial.println("  Will not be able to fire.");
+  Serial.println("  May be desirable for, e.g. static firing range targets, but not much else.");
+  #endif
+
+  Serial.println("");
+  Serial.println("FIRE_STATUS_LED_PIN");
+  #ifdef FIRE_STATUS_LED_PIN
+  Serial.print("  Pin: ");
+  Serial.println(FIRE_STATUS_LED_PIN);
+  Serial.println("  Wiring: Cathode wired to this pin, other to ground.");
+  Serial.print("  Config: Will turn on for ");
+  Serial.print(FIRE_STATUS_LED_DURATION_MILLIS);
+  Serial.println("ms after firing.");
+  #else
+  Serial.println("  Not configured.");
+  Serial.println("  Will not show visual feedback when getting hit.");
+  #endif
+
+  Serial.println("");
+  Serial.println("HIT_STATUS_LED_PIN");
+  #ifdef HIT_STATUS_LED_PIN
+  Serial.print("  Pin: ");
+  Serial.println(HIT_STATUS_LED_PIN);
+  Serial.println("  Wiring: Cathode wired to this pin, other to ground.");
+  Serial.print("  Config: Will turn on for ");
+  Serial.print(HIT_STATUS_LED_DURATION_MILLIS);
+  Serial.println("ms after being hit by another player.");
+  #else
+  Serial.println("  Not configured.");
+  Serial.println("  Will not show visual feedback when getting hit.");
+  #endif
+
+  Serial.println("");
+  Serial.println(" SPEAKER_PIN");
+  #ifdef SPEAKER_PIN
+  Serial.print("  Pin: ");
+  Serial.println(SPEAKER_PIN);
+  Serial.println("  Wiring: Ensure this pin has enough power to drive the speaker.");
+  Serial.println("          If not, connect a transistor to this pin instead of directly connecting the speaker.");
+  Serial.println("          Also wire a snubber diode if required.");
+  #else
+  Serial.println("  Not configured.");
+  Serial.println("  Will not provide any audio feedback when firing, getting hit, dying, configuring, etc.");
+  #endif
+  
+  Serial.println("");
+}
 
 void setup() {
-  Serial.begin(9600);
-  Serial.println("Setting up arduino-laser-tag with the following pin configurations:");
-
-  #ifdef FIRE_BUTTON_PIN
-  Serial.print(printf(" FIRE_BUTTON_PIN: %d", FIRE_BUTTON_PIN));
-  #endif
-
-  #ifdef FIRE_STATUS_LED_PIN
-  Serial.print(printf(" FIRE_LED_PIN: %d", FIRE_STATUS_LED_PIN));
-  #endif
+  Serial.begin(115200);
+  printConfig();
 
   #ifdef FIRE_BUTTON_PIN
   pinMode(FIRE_BUTTON_PIN, INPUT_PULLUP);
