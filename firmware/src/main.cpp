@@ -12,13 +12,13 @@
  * Connected to a momentary switch, where one side is grounded and the other side is this pin.
  * Will be connected to the device via an internal pullup resistor, so no additional resistors are required.
  */
-#define FIRE_BUTTON_PIN 4
+#define FIRE_BUTTON_PIN 5
 
 /**
  * Optional (but highly recommended or else your device cannot fire).
  * Emits IR signals at 38Khz using the Sony protocol each time FIRE_BUTTON_PIN is triggered.
  */
-#define FIRE_IR_SEND_PIN 8
+#define FIRE_IR_SEND_PIN 6
 
 /**
  * Required if FIRE_BUTTON_PIN is set, otherwise not required.
@@ -33,25 +33,25 @@
  * Can wire multiple IR Receivers in parallel all to this pin.
  * Recommended to include a capacitor in the circuit (e.g. 10uF) as per https://web.archive.org/web/20161210114703/http://www.lasertagparts.com/mtsensors.htm.
  */
-#define HIT_IR_RECEIVE_PIN 9
+#define HIT_IR_RECEIVE_PIN 4
 
 /**
  * Optional.
  * Flashes for FIRE_STATUS_LED_DURATION_MILLIS each time FIRE_BUTTON_PIN is triggered.
- * Defauts to HIGH when off, and set to LOW to turn LED on.
+ * Defauts to LOW when off, and set to HIGH to turn LED on.
  */
-#define FIRE_STATUS_LED_PIN 5
+#define FIRE_STATUS_LED_PIN 8
 #define FIRE_STATUS_LED_DURATION_MILLIS 100
 
 /**
  * Optional.
  * Flashes for HIT_STATUS_LED_DURATION_MILLIS each time the device registers a hit on HIT_IR_RECEIVE_PIN.
- * Defauts to HIGH when off, and set to LOW to turn LED on.
+ * Defauts to LOW when off, and set to HIGH to turn LED on.
  */
-#define HIT_STATUS_LED_PIN 6
+#define HIT_STATUS_LED_PIN 7
 #define HIT_STATUS_LED_DURATION_MILLIS 200
 
-// #define SPEAKER_PIN 7
+#define SPEAKER_PIN 9
 
 #define DECODE_SONY
 
@@ -177,12 +177,12 @@ void setup() {
 
   #ifdef FIRE_STATUS_LED_PIN
   pinMode(FIRE_STATUS_LED_PIN, OUTPUT);
-  digitalWrite(FIRE_STATUS_LED_PIN, HIGH);
+  digitalWrite(FIRE_STATUS_LED_PIN, LOW);
   #endif
 
   #ifdef HIT_STATUS_LED_PIN
   pinMode(HIT_STATUS_LED_PIN, OUTPUT);
-  digitalWrite(HIT_STATUS_LED_PIN, HIGH);
+  digitalWrite(HIT_STATUS_LED_PIN, LOW);
   #endif
 
   #ifdef HIT_IR_RECEIVE_PIN
@@ -244,10 +244,7 @@ RandomDescendingNoteSound dieSound = RandomDescendingNoteSound(
 void loop() {
 
   #ifdef FIRE_BUTTON_PIN
-  if (
-    digitalRead(FIRE_BUTTON_PIN) == LOW
-    && millis() - lastFireTime > FIRE_COOLOFF_MILLIS
-  ) {
+  if (digitalRead(FIRE_BUTTON_PIN) == LOW && millis() - lastFireTime > FIRE_COOLOFF_MILLIS) {
 
     Serial.println("Fire button pressed");
     lastFireTime = millis();
@@ -257,7 +254,7 @@ void loop() {
     #endif
 
     #ifdef FIRE_STATUS_LED_PIN
-    digitalWrite(FIRE_STATUS_LED_PIN, LOW);
+    digitalWrite(FIRE_STATUS_LED_PIN, HIGH);
     #endif
 
     #ifdef SPEAKER_PIN
@@ -275,7 +272,7 @@ void loop() {
     health -= 30;
 
     #ifdef HIT_STATUS_LED_PIN
-    digitalWrite(HIT_STATUS_LED_PIN, LOW);
+    digitalWrite(HIT_STATUS_LED_PIN, HIGH);
     #endif
 
     #ifdef SPEAKER_PIN
@@ -290,13 +287,13 @@ void loop() {
 
   #ifdef FIRE_STATUS_LED_PIN
   if (millis() - lastFireTime > FIRE_STATUS_LED_DURATION_MILLIS) {
-    digitalWrite(FIRE_STATUS_LED_PIN, HIGH);
+    digitalWrite(FIRE_STATUS_LED_PIN, LOW);
   }
   #endif
 
   #ifdef HIT_STATUS_LED_PIN
   if (millis() - lastHitTime > HIT_STATUS_LED_DURATION_MILLIS) {
-    digitalWrite(HIT_STATUS_LED_PIN, HIGH);
+    digitalWrite(HIT_STATUS_LED_PIN, LOW);
   }
   #endif
 
