@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name "ir-sensor-eagle-import")(type "KiCad")(uri "${KIPRJMOD}/ir-sensor-eagle-import.kicad_sym")(options "")(descr ""))
+)
