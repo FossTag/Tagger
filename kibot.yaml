@@ -1,0 +1,25 @@
+kibot:
+  version: 1
+
+preflight:
+  run_erc: false
+  run_drc: false
+
+global:
+  dir: '.'
+  out_dir: './docs/'
+
+outputs:
+  - name: '3d'
+    type: 'render_3d'
+    dir: renders
+
+  - name: 'svg'
+    type: 'svg_pcb_print'
+    dir: print/svg
+    layers: all
+
+  - name: 'pdf'
+    type: 'pdf_pcb_print'
+    dir: print/pdf
+    layers: all
