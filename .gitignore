@@ -3,8 +3,10 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+.idea
 fp-info-cache
 Tagger-backups/
 Tagger.kicad_sch-bak
 \#auto_saved_files\#
 output/
+_autosave-Tagger.kicad_pcb
